@@ -1,11 +1,8 @@
-from django.core.cache import cache
-# COMP0016-Team6-Minyi Lei
-
-
+from . import store
 
 def provideWholeSummarisation(request):
     try:
-        prefix=request.session["paperFingerprint"]
+        paper_id=request.session["paperFingerprint"]
     except KeyError:
         return {
             "current_status": 0,
@@ -13,14 +10,14 @@ def provideWholeSummarisation(request):
             "messages": [],
             "result": {}
         }
-    if cache.get(prefix+"_initialized")==None:
+    if store.get(paper_id, "initialized")==None:
         return {
             "current_status": 0,
             "errors": ["No file uploaded!"],
             "messages": [],
             "result": {}
         }
-    elif cache.get(prefix+"_featureTable")["enableWholeSummarisation"]==False:
+    elif store.get(paper_id, "featureTable")["enableWholeSummarisation"]==False:
         return {
             "current_status": 0,
             "errors": ["Whole summarisation is disabled!"],
@@ -28,22 +25,22 @@ def provideWholeSummarisation(request):
             "result": {}
         }
     
-    elif cache.get(prefix+"_initialized")==False:
+    elif store.get(paper_id, "initialized")==False:
         return {
             "current_status": -1,
             "errors": ["System initializing, analysis did not start yet!"],
             "messages": [],
             "result": {}
         }
-    elif cache.get(prefix+"_whole_completed") == False:
+    elif store.get(paper_id, "whole_completed") == False:
         return {
             "current_status": -1,
             "errors": ["Whole summarisation is in progress!"],
             "messages": [],
             "result": {}
         }
-    elif cache.get(prefix+"_whole_completed") == True:
-        result=cache.get(prefix+"_whole")
+    elif store.get(paper_id, "whole_completed") == True:
+        result=store.get(paper_id, "whole")
         response={
             "current_status": 1,
             "errors": [],
@@ -61,7 +58,7 @@ def provideWholeSummarisation(request):
 
 def providePartialSummarisation(request):
     try:
-        prefix=request.session["paperFingerprint"]
+        paper_id=request.session["paperFingerprint"]
     except KeyError:
         return {
             "current_status": 0,
@@ -69,14 +66,14 @@ def providePartialSummarisation(request):
             "messages": [],
             "result": {}
         }
-    if cache.get(prefix+"_initialized")==None:
+    if store.get(paper_id, "initialized")==None:
         return {
             "current_status": 0,
             "errors": ["No file uploaded!"],
             "messages": [],
             "result": {}
         }
-    elif cache.get(prefix+"_featureTable")["enablePartialSummarisation"]==False:
+    elif store.get(paper_id, "featureTable")["enablePartialSummarisation"]==False:
         return {
             "current_status": 0,
             "errors": ["Partial summarisation is disabled!"],
@@ -84,22 +81,22 @@ def providePartialSummarisation(request):
             "result": {}
         }
     
-    elif cache.get(prefix+"_initialized")==False:
+    elif store.get(paper_id, "initialized")==False:
         return {
             "current_status": -1,
             "errors": ["System initializing, analysis did not start yet!"],
             "messages": [],
             "result": {}
         }
-    elif cache.get(prefix+"_partial_completed") == False:
+    elif store.get(paper_id, "partial_completed") == False:
         return {
             "current_status": -1,
             "errors": ["Partial summarisation is in progress!"],
             "messages": [],
             "result": {}
         }
-    elif cache.get(prefix+"_partial_completed") == True:
-        result=cache.get(prefix+"_partial")
+    elif store.get(paper_id, "partial_completed") == True:
+        result=store.get(paper_id, "partial")
         response={
             "current_status": 1,
             "errors": [],
@@ -118,7 +115,7 @@ def providePartialSummarisation(request):
 
 def provideKeywords(request):
     try:
-        prefix=request.session["paperFingerprint"]
+        paper_id=request.session["paperFingerprint"]
     except KeyError:
         return {
             "current_status": 0,
@@ -126,36 +123,36 @@ def provideKeywords(request):
             "messages": [],
             "result": {}
         }
-    if cache.get(prefix+"_initialized")==None: # avoid key error
+    if store.get(paper_id, "initialized")==None: # avoid key error
         return {
             "current_status": 0,
             "errors": ["No file uploaded!"],
             "messages": [],
             "result": {}
         }
-    elif cache.get(prefix+"_featureTable")["enableKeywords"]==False:
+    elif store.get(paper_id, "featureTable")["enableKeywords"]==False:
         return {
             "current_status": 0,
             "errors": ["Keywords analysis is disabled!"],
             "messages": [],
             "result": {}
         }
-    elif cache.get(prefix+"_initialized")==False:
+    elif store.get(paper_id, "initialized")==False:
         return {
             "current_status": -1,
             "errors": ["System initializing, analysis did not start yet!"],
             "messages": [],
             "result": {}
         }
-    elif cache.get(prefix+"_keywords_completed") == False:
+    elif store.get(paper_id, "keywords_completed") == False:
         return {
             "current_status": -1,
             "errors": ["Keywords analysis is in progress!"],
             "messages": [],
             "result": {}
         }
-    elif cache.get(prefix+"_keywords_completed") == True:
-        result=cache.get(prefix+"_keywords")
+    elif store.get(paper_id, "keywords_completed") == True:
+        result=store.get(paper_id, "keywords")
         if request.GET.get("max") != None:
             maxNum=int(request.GET.get("max"))
         else:
@@ -192,7 +189,7 @@ def provideKeywords(request):
 
 def provideRefs(request):
     try:
-        prefix=request.session["paperFingerprint"]
+        paper_id=request.session["paperFingerprint"]
     except KeyError:
         return {
             "current_status": 0,
@@ -200,14 +197,14 @@ def provideRefs(request):
             "messages": [],
             "result": {}
         }
-    if cache.get(prefix+"_initialized")==None:
+    if store.get(paper_id, "initialized")==None:
         return {
             "current_status": 0,
             "errors": ["No file uploaded!"],
             "messages": [],
             "result": {}
         }
-    elif cache.get(prefix+"_featureTable")["enableRefs"]==False:
+    elif store.get(paper_id, "featureTable")["enableRefs"]==False:
         return {
             "current_status": 0,
             "errors": ["References extraction is disabled!"],
@@ -215,22 +212,22 @@ def provideRefs(request):
             "result": {}
         }
     
-    elif cache.get(prefix+"_initialized")==False:
+    elif store.get(paper_id, "initialized")==False:
         return {
             "current_status": -1,
             "errors": ["System initializing, analysis did not start yet!"],
             "messages": [],
             "result": {}
         }
-    elif cache.get(prefix+"_refs_completed") == False:
+    elif store.get(paper_id, "refs_completed") == False:
         return {
             "current_status": -1,
             "errors": ["References extraction is in progress!"],
             "messages": [],
             "result": {}
         }
-    elif cache.get(prefix+"_refs_completed") == True:
-        result=cache.get(prefix+"_refs")
+    elif store.get(paper_id, "refs_completed") == True:
+        result=store.get(paper_id, "refs")
         response={
             "current_status": 1,
             "errors": [],
@@ -253,7 +250,7 @@ def provideRefs(request):
 
 def provideMeta(request):
     try:
-        prefix=request.session["paperFingerprint"]
+        paper_id=request.session["paperFingerprint"]
     except KeyError:
         return {
             "current_status": 0,
@@ -261,14 +258,14 @@ def provideMeta(request):
             "messages": [],
             "result": {}
         }
-    if cache.get(prefix+"_initialized")==None:
+    if store.get(paper_id, "initialized")==None:
         return {
             "current_status": 0,
             "errors": ["No file uploaded!"],
             "messages": [],
             "result": {}
         }
-    elif cache.get(prefix+"_featureTable")["enableMeta"]==False:
+    elif store.get(paper_id, "featureTable")["enableMeta"]==False:
         return {
             "current_status": 0,
             "errors": ["Metadata extraction is disabled!"],
@@ -276,22 +273,22 @@ def provideMeta(request):
             "result": {}
         }
     
-    elif cache.get(prefix+"_initialized")==False:
+    elif store.get(paper_id, "initialized")==False:
         return {
             "current_status": -1,
             "errors": ["System initializing, analysis did not start yet!"],
             "messages": [],
             "result": {}
         }
-    elif cache.get(prefix+"_meta_completed") == False:
+    elif store.get(paper_id, "meta_completed") == False:
         return {
             "current_status": -1,
             "errors": ["Metadata extraction is in progress!"],
             "messages": [],
             "result": {}
         }
-    elif cache.get(prefix+"_meta_completed") == True:
-        result=cache.get(prefix+"_meta")
+    elif store.get(paper_id, "meta_completed") == True:
+        result=store.get(paper_id, "meta")
         response={
             "current_status": 1,
             "errors": [],
@@ -314,7 +311,7 @@ def provideMeta(request):
 
 def provideMetric(request):
     try:
-        prefix=request.session["paperFingerprint"]
+        paper_id=request.session["paperFingerprint"]
     except KeyError:
         return {
             "current_status": 0,
@@ -322,14 +319,14 @@ def provideMetric(request):
             "messages": [],
             "result": {}
         }
-    if cache.get(prefix+"_initialized")==None:
+    if store.get(paper_id, "initialized")==None:
         return {
             "current_status": 0,
             "errors": ["No file uploaded!"],
             "messages": [],
             "result": {}
         }
-    elif cache.get(prefix+"_featureTable")["enableMetrics"]==False:
+    elif store.get(paper_id, "featureTable")["enableMetrics"]==False:
         return {
             "current_status": 0,
             "errors": ["Metrics is disabled!"],
@@ -337,22 +334,22 @@ def provideMetric(request):
             "result": {}
         }
     
-    elif cache.get(prefix+"_initialized")==False:
+    elif store.get(paper_id, "initialized")==False:
         return {
             "current_status": -1,
             "errors": ["System initializing, Metrics did not start yet!"],
             "messages": [],
             "result": {}
         }
-    elif cache.get(prefix+"_metrics_completed") == False:
+    elif store.get(paper_id, "metrics_completed") == False:
         return {
             "current_status": -1,
             "errors": ["Metrics extraction is in progress!"],
             "messages": [],
             "result": {}
         }
-    elif cache.get(prefix+"_metrics_completed") == True:
-        result=cache.get(prefix+"_metrics")
+    elif store.get(paper_id, "metrics_completed") == True:
+        result=store.get(paper_id, "metrics")
         response={
             "current_status": 1,
             "errors": [],

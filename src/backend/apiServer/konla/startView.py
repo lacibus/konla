@@ -1,4 +1,5 @@
-from django.core.cache import cache
+from . import store
+
 from .form import selectionForm
 
 from .PaperProcessor.PaperProcessor import PaperProcessor
@@ -22,9 +23,9 @@ def startProcessing(request):
         }
         if "paperFingerprint" not in request.session:
             raise Exception("No file uploaded! Session data missing!")
-        checksum=request.session["paperFingerprint"]
-        cache.set(checksum+"_featureTable",featureTable,timeout=3600)
-        threadMain=Thread(target=mainThread,args=(request.session["uploadedFile"],checksum,featureTable))
+        paper_id=request.session["paperFingerprint"]
+        store.put(paper_id, "featureTable",featureTable)
+        threadMain=Thread(target=mainThread,args=(request.session["uploadedFile"],paper_id,featureTable))
         threadMain.start()
 
         response={
@@ -44,49 +45,49 @@ def startProcessing(request):
     finally:
         return response
 
-def mainThread(path,prefix,featureTable):
-    cache.set(prefix+"_initialized",False,timeout=3600)
+def mainThread(path,paper_id,featureTable):
+    store.put(paper_id,"initialized",False)
     pp=PaperProcessor(path)
 
     if featureTable["enableWholeSummarisation"]:
         whole=Thread(target=wholeSummarisationThread,args=(prefix,pp))
-        cache.set(prefix+"_whole_completed",False,timeout=3600)
+        store.put(paper_id,"whole_completed",False)
         whole.start()
     if featureTable["enablePartialSummarisation"]:
         partial=Thread(target=partialSummarisationThread,args=(prefix,pp))
-        cache.set(prefix+"_partial_completed",False,timeout=3600)
+        store.put(paper_id,"partial_completed",False)
         partial.start()
     if featureTable["enableKeywords"]:
         keyword=Thread(target=keywordThread,args=(prefix,pp))
-        cache.set(prefix+"_keywords_completed",False,timeout=3600) # 0: in progress, 1: completed, -1: disabled
+        store.put(paper_id,"keywords_completed",False) # 0: in progress, 1: completed, -1: disabled
         keyword.start()
 
     if featureTable["enableRefs"]:
         refs=Thread(target=referencesThread,args=(prefix,pp))
-        cache.set(prefix+"_refs_completed",False,timeout=3600)
+        store.put(paper_id,"refs_completed",False)
         refs.start()
     
     if featureTable["enableMeta"]:
         meta=Thread(target=metadataThread,args=(prefix,pp))
-        cache.set(prefix+"_meta_completed",False,timeout=3600)
+        store.put(paper_id,"meta_completed",False)
         meta.start()
     
     if featureTable["enableMetrics"]:
         metrics=Thread(target=metricsThread,args=(prefix,pp))
-        cache.set(prefix+"_metrics_completed",False,timeout=3600)
+        store.put(paper_id,"metrics_completed",False)
         metrics.start()
     
-    cache.set(prefix+"_initialized",True,timeout=3600)
+    store.put(paper_id,"initialized",True)
 
 def wholeSummarisationThread(prefix,paperProcessor):
     summary=paperProcessor.summarize_whole()
-    cache.set(prefix+"_whole",summary,timeout=3600)
-    cache.set(prefix+"_whole_completed",True,timeout=3600)
+    store.put(paper_id,"whole",summary)
+    store.put(paper_id,"whole_completed",True)
 
 def partialSummarisationThread(prefix,paperProcessor):
     summary=paperProcessor.summarize_partial()
-    cache.set(prefix+"_partial",summary,timeout=3600)
-    cache.set(prefix+"_partial_completed",True,timeout=3600)
+    store.put(paper_id,"partial",summary)
+    store.put(paper_id,"partial_completed",True)
 
 def keywordThread(prefix,paperProcessor):
     normalResult=paperProcessor.wordFrequency(max=100,ignoreCase=False,useLemma=False)
@@ -98,22 +99,22 @@ def keywordThread(prefix,paperProcessor):
         "lemma": lemmaResult
     }
     #time.sleep(60)
-    cache.set(prefix+"_keywords",result,timeout=3600)
-    cache.set(prefix+"_keywords_completed",True,timeout=3600) # -1 means feature disabled, 0 means feature in progress, 1 means feature completed
+    store.put(paper_id,"keywords",result)
+    store.put(paper_id,"keywords_completed",True) # -1 means feature disabled, 0 means feature in progress, 1 means feature completed
 
 def referencesThread(prefix,paperProcessor):
     refs=paperProcessor.references()
-    cache.set(prefix+"_refs",refs,timeout=3600)
-    cache.set(prefix+"_refs_completed",True,timeout=3600)
+    store.put(paper_id,"refs",refs)
+    store.put(paper_id,"refs_completed",True)
 
 def metadataThread(prefix,paperProcessor):
     meta=paperProcessor.metaData()
-    cache.set(prefix+"_meta",meta,timeout=3600)
-    cache.set(prefix+"_meta_completed",True,timeout=3600)
+    store.put(paper_id,"meta",meta)
+    store.put(paper_id,"meta_completed",True)
 
 def metricsThread(prefix,paperProcessor):
     metrics=paperProcessor.metrics()
-    cache.set(prefix+"_metrics",metrics,timeout=3600)
-    cache.set(prefix+"_metrics_completed",True,timeout=3600)
+    store.put(paper_id,"metrics",metrics)
+    store.put(paper_id,"metrics_completed",True)
 
 

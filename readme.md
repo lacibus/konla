@@ -39,12 +39,16 @@ KONLA (Knowledge Organisation through Natural Language Analysis) is being develo
 * django-cors-headers==3.11.0
 * uwsgi==2.0.20
 
+## Building the base Docker image
+The base docker image includes the components that take a long time to build. It is used to generate images with new functionality quickly. 
+##### To build it:
+`docker build -f Dockerfile_base -t lacibus/konla_base:0.00 .`
 ## Running the project locally
-To run the project locally, download or clone the project from the repositoy. To run, you will need to have docker installed on your machine. Navigate to the project folder, open the terminal and follow these steps to start the production server locally:
+To run the project locally, download or clone the project from the repository. To run, you will need to have docker installed on your machine. Navigate to the project folder, open the terminal and follow these steps to start the production server locally:
 ##### Step 1 Build the docker image
-`docker build -t konla .`
+`docker build -t lacibus/konla .`
 ##### Step 2 Run the server using the safe port 443
-`docker run -p 443:443 -d konla`
+`docker run -p 443:443 -d lacibus/konla`
 ##### Step 3 Open the browser and try out the app
 Open your browser and navigate to https://127.0.0.1
 

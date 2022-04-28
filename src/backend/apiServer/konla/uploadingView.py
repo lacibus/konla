@@ -1,4 +1,5 @@
 import requests
+from . import store
 from pathlib import Path
 import hashlib
 from .PaperProcessor.PDFHelper.PDFHelper import PDFHelper
@@ -57,7 +58,9 @@ def acceptFile(request):
             PaperText=PDFHelper.pdf2text(savedPath)
                
         request.session["uploadedFile"]=os.path.join("/tmp",fileName)
-        request.session["paperFingerprint"]=fingerprint
+        paper_id = store.add()
+        store.put(paper_id, fingerprint)
+        request.session["paperFingerprint"]=paper_id
         response={
             "current_status": 1,
             "errors": [],
